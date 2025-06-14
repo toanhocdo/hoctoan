@@ -184,6 +184,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({
             showResults={showResults}
             onAnswerSelect={handleAnswerSelect}
             onMathJaxRender={onMathJaxRender}
+            questionNumber={currentQuestion + 1}
           />
         )}
 
@@ -233,43 +234,59 @@ const QuizSection: React.FC<QuizSectionProps> = ({
   );
 };
 
-// Multiple Choice Component
+// Multiple Choice Component với giao diện mới
 const MultipleChoiceQuestion: React.FC<{
   question: QuizQuestion;
   selectedAnswer: number;
   showResults: boolean;
   onAnswerSelect: (answer: number) => void;
   onMathJaxRender: () => void;
-}> = ({ question, selectedAnswer, showResults, onAnswerSelect, onMathJaxRender }) => {
+  questionNumber: number;
+}> = ({ question, selectedAnswer, showResults, onAnswerSelect, onMathJaxRender, questionNumber }) => {
   
   const handleAnswerClick = (index: number) => {
     onAnswerSelect(index);
     setTimeout(onMathJaxRender, 50);
   };
 
+  const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
+
   return (
     <>
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        {question.question}
-      </h3>
+      {/* Question Header */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border-l-4 border-blue-500">
+          <h3 className="text-xl font-bold text-blue-800 mb-2">
+            Question {questionNumber}: {question.question}
+          </h3>
+          <p className="text-gray-600 text-sm">Choose the correct answer:</p>
+        </div>
+      </div>
 
+      {/* Answer Options */}
       <div className="space-y-3 mb-6">
         {question.options.map((option, index) => {
-          let buttonClass = "w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ";
+          let buttonClass = "w-full p-4 text-left rounded-xl border-2 transition-all duration-200 flex items-center space-x-4 ";
+          let labelClass = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ";
           
           if (showResults) {
             if (index === question.correctAnswer) {
               buttonClass += "bg-green-50 border-green-500 text-green-800";
+              labelClass += "bg-green-500 text-white";
             } else if (index === selectedAnswer && index !== question.correctAnswer) {
               buttonClass += "bg-red-50 border-red-500 text-red-800";
+              labelClass += "bg-red-500 text-white";
             } else {
               buttonClass += "bg-gray-50 border-gray-200 text-gray-600";
+              labelClass += "bg-gray-300 text-gray-600";
             }
           } else {
             if (index === selectedAnswer) {
-              buttonClass += "bg-orange-50 border-orange-500 text-orange-800";
+              buttonClass += "bg-blue-50 border-blue-500 text-blue-800 shadow-md";
+              labelClass += "bg-blue-500 text-white";
             } else {
-              buttonClass += "bg-gray-50 border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300";
+              buttonClass += "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300";
+              labelClass += "bg-gray-200 text-gray-600";
             }
           }
 
@@ -278,29 +295,37 @@ const MultipleChoiceQuestion: React.FC<{
               key={index}
               onClick={() => handleAnswerClick(index)}
               className={buttonClass}
+              disabled={showResults}
             >
-              <div className="flex items-center justify-between">
-                <span>{option}</span>
-                {showResults && (
-                  <div>
-                    {index === question.correctAnswer && (
-                      <Check className="w-6 h-6 text-green-600" />
-                    )}
-                    {index === selectedAnswer && index !== question.correctAnswer && (
-                      <X className="w-6 h-6 text-red-600" />
-                    )}
-                  </div>
-                )}
+              <div className={labelClass}>
+                {optionLabels[index]}
               </div>
+              <span className="flex-1">{option}</span>
+              {showResults && (
+                <div className="flex-shrink-0">
+                  {index === question.correctAnswer && (
+                    <Check className="w-6 h-6 text-green-600" />
+                  )}
+                  {index === selectedAnswer && index !== question.correctAnswer && (
+                    <X className="w-6 h-6 text-red-600" />
+                  )}
+                </div>
+              )}
             </button>
           );
         })}
       </div>
 
+      {/* Explanation */}
       {showResults && (
-        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2">Giải thích:</h4>
-          <p className="text-blue-700">{question.explanation}</p>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+          <div className="flex items-center space-x-2 mb-3">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">!</span>
+            </div>
+            <h4 className="font-semibold text-blue-800">Giải thích:</h4>
+          </div>
+          <p className="text-blue-700 leading-relaxed">{question.explanation}</p>
         </div>
       )}
     </>
@@ -324,14 +349,19 @@ const TrueFalseQuestionComponent: React.FC<{
 
   return (
     <>
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        {question.question}
-      </h3>
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-l-4 border-purple-500">
+          <h3 className="text-xl font-bold text-purple-800 mb-2">
+            {question.question}
+          </h3>
+          <p className="text-gray-600 text-sm">Đánh giá tính đúng/sai của các khẳng định sau:</p>
+        </div>
+      </div>
 
       <div className="space-y-4 mb-6">
         {question.statements.map((statement, index) => (
           <div key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-            <p className="text-gray-800 mb-3">{statement.text}</p>
+            <p className="text-gray-800 mb-3 font-medium">{statement.text}</p>
             <div className="flex space-x-3">
               <button
                 onClick={() => handleStatementAnswer(index, true)}
@@ -373,9 +403,14 @@ const TrueFalseQuestionComponent: React.FC<{
       </div>
 
       {showResults && (
-        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2">Giải thích:</h4>
-          <p className="text-blue-700">{question.explanation}</p>
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+          <div className="flex items-center space-x-2 mb-3">
+            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">!</span>
+            </div>
+            <h4 className="font-semibold text-purple-800">Giải thích:</h4>
+          </div>
+          <p className="text-purple-700 leading-relaxed">{question.explanation}</p>
         </div>
       )}
     </>
@@ -398,9 +433,14 @@ const ShortAnswerQuestionComponent: React.FC<{
 
   return (
     <>
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        {question.question}
-      </h3>
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-l-4 border-green-500">
+          <h3 className="text-xl font-bold text-green-800 mb-2">
+            {question.question}
+          </h3>
+          <p className="text-gray-600 text-sm">Nhập câu trả lời của bạn vào ô bên dưới:</p>
+        </div>
+      </div>
 
       <div className="mb-6">
         <div className="flex items-center space-x-3 mb-3">
@@ -412,7 +452,7 @@ const ShortAnswerQuestionComponent: React.FC<{
           value={selectedAnswer}
           onChange={(e) => handleInputChange(e.target.value)}
           disabled={showResults}
-          className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none transition-colors duration-200"
+          className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors duration-200 text-lg"
           placeholder="Nhập đáp án..."
         />
         {question.hint && !showResults && (
@@ -442,9 +482,14 @@ const ShortAnswerQuestionComponent: React.FC<{
             <p className="text-sm">Đáp án đúng: <strong>{question.correctAnswer}</strong></p>
           </div>
           
-          <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-            <h4 className="font-semibold text-blue-800 mb-2">Giải thích:</h4>
-            <p className="text-blue-700">{question.explanation}</p>
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">!</span>
+              </div>
+              <h4 className="font-semibold text-green-800">Giải thích:</h4>
+            </div>
+            <p className="text-green-700 leading-relaxed">{question.explanation}</p>
           </div>
         </div>
       )}
